@@ -34,3 +34,36 @@ for Li in trTag[:33]:
         except Exception as e:
            print('---------------')
 #return {'rank':rank, 'title':title, 'point':point}
+
+#student2
+
+import bs4
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+need_reviews_cnt = 100
+reviews = []
+review_data=[]
+
+for page in range(1,50):
+    url = f'https://movie.naver.com/movie/point/af/list.naver?&page={page}'
+    html = requests.get(url)
+    soup = BeautifulSoup(html.content,'html.parser')
+    reviews = soup.find_all("td",{"class":"title"})
+    
+    for review in reviews:
+        sentence = review.find("a",{"class":"report"}).get("onclick").split("', '")[2]
+        if sentence != "":
+            movie = review.find("a",{"class":"movie color_b"}).get_text()
+            score = review.find("em").get_text()
+            review_data.append([movie,sentence,int(score)])
+            need_reviews_cnt-= 1     
+    if need_reviews_cnt < 0:                                         
+        break
+
+columns_name = ["movie","sentence","score"]
+with open ( "samples.csv", "w", newline ="",encoding = 'utf8' ) as f:
+    write = csv.writer(f)
+    write.writerow(columns_name)
+    write.writerows(review_data)
